@@ -5,55 +5,66 @@
 
 #define height 40
 #define width 70
+#define cell_number height * width
 
 void my_init_cells(int cell[height][width], FILE* fp) {
+    //ファイルがない場合の初期配置
     if (fp == NULL){
-        cell[30][20] = 1;
-        cell[30][22] = 1;
-        cell[31][22] = 1;
-        cell[31][23] = 1;
-        cell[32][20] = 1;
-    }else {
+        for (int i = 0; i < cell_number / 10; ++i) {
+            int height_point = rand() % height;
+            int width_point = rand() % width;
+            cell[height_point][width_point] = 1;
+        }
+    }//ファイルがある場合の初期配置
+    else {
+        char s[11];
         int height_point, width_point;
-        if (fgetc(fp) == '#'){
-            while (fscanf(fp, "%d %d\n", &height_point, &width_point) != EOF) {
-                cell[height_point][width_point] = 1;
-            }
-        }else {
-            printf("this is not the correct file");
+        fgets(s, 10, fp);
+        while (fscanf(fp, "%d %d", &width_point, &height_point) != EOF) {
+            cell[height_point][width_point] = 1;
         }
-        }
+        
+    }
 }
 
 void my_print_cells(FILE* fp, int gen, int cell[height][width]) {
     printf("generation = %d\n", gen);
-    cell[0][0] = '+';
-    cell[0][width - 1] = '+';
-    cell[height - 1][0] = '+';
-    cell[height - 1][width - 1] = '+';
-    for (int i = 1; i < width - 1; ++i) {
-        cell[0][i] = '-';
-        cell[height - 1][i] = '-';
+    //上の壁
+    printf("+");
+    for (int i = 0; i < width; ++i) {
+        printf("-");
     }
-    for (int j = 1; j < height; ++j) {
-        cell[j][0] = '|';
-        cell[j][width - 1] = '|';    
-    }
-    for (int k = 0; k < width; ++k) {
-        for (int l = 0; l < height; ++l) {
-            printf("%c ", cell[k][l]);
+    printf("+\n");
+    //中身
+    for (int i = 0; i < height; ++i) {
+        printf("|");
+        for (int j = 0; j < width; ++j) {
+            if (cell[i][j]) {
+                printf("\e[31m#\e[0m");
+            }else {
+                printf(" ");
+            }
         }
-        printf("\n");
+        printf("|\n");
     }
+    //下の壁
+    printf("+");
+    for (int i = 0; i < width; ++i) {
+        printf("-");
+    }
+    printf("+\n");
 }
 
+//個別のセルの次状態を別の配列に書いておく
 void my_update_individual(int k, int l, int cell[height][width], int copy_cell[height][width]) {
     if (cell[k][l] == 1) {
         int count = 0;
         for (int m = k - 1; m <= k + 1; ++m) {
             for (int n = l - 1; n <= l + 1; ++n) {
-                if (cell[m][n] == 1) {
-                    count++;
+                if (m >= 0 && m < height && n >= 0 && n < width) {
+                    if (cell[m][n] == 1) {
+                        count++;
+                    }
                 }
             }
         }
@@ -66,8 +77,10 @@ void my_update_individual(int k, int l, int cell[height][width], int copy_cell[h
         int count = 0;
         for (int m = k - 1; m <= k + 1; ++m) {
             for (int n = l - 1; n <= l + 1; ++n) {
-                if (cell[m][n] == 1) {
-                    count++;
+                if (m >= 0 && m < height && n >= 0 && n < width) {
+                    if (cell[m][n] == 1) {
+                        count++;
+                    }
                 }
             }
         }
@@ -79,6 +92,7 @@ void my_update_individual(int k, int l, int cell[height][width], int copy_cell[h
     }
 }
 
+//すべてのセルの次状態がそろった時点で、もとのセルに次状態を書き込む
 void my_update_cells(int cell[height][width]) {
     int copy_cell[height][width] = {0};
     for (int k = 0; k < height; ++k) {

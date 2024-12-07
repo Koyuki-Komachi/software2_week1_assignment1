@@ -27,8 +27,23 @@ void my_init_cells(int cell[height][width], FILE* fp) {
     }
 }
 
+double cell_ratio(int cell[height][width]) {
+    int num = 0;
+    double ratio;
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            if (cell[i][j] == 1) {
+                num++;
+            }
+        }
+    }
+    ratio = (double)num / (height * width);
+    return ratio;
+}
+
 void my_print_cells(FILE* fp, int gen, int cell[height][width]) {
     printf("generation = %d\n", gen);
+    printf("living cell ratio = %f\n", cell_ratio(cell));
     //上の壁
     printf("+");
     for (int i = 0; i < width; ++i) {
@@ -140,14 +155,14 @@ int main(int argc, char **argv) {
     
     my_print_cells(fp, 0, cell); // 表示する
     sleep(1); // 1秒休止
-    fprintf(fp,"\e[%dA",height+3);//height+3 の分、カーソルを上に戻す(壁2、表示部1)
+    fprintf(fp,"\e[%dA",height+4);//height+3 の分、カーソルを上に戻す(壁2、表示部1)
     
     /* 世代を進める*/
     for (int gen = 1 ;; gen++) {
         my_update_cells(cell); // セルを更新
         my_print_cells(fp, gen, cell);  // 表示する
         sleep(1); //1秒休止する
-        fprintf(fp,"\e[%dA",height+3);//height+3 の分、カーソルを上に戻す(壁2、表示部1)
+        fprintf(fp,"\e[%dA",height+4);//height+3 の分、カーソルを上に戻す(壁2、表示部1)
     }
     
     return EXIT_SUCCESS;
